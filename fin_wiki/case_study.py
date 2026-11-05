@@ -48,7 +48,12 @@ class CaseEvaluator:
     def __init__(self, rules: list[RuleVersion]) -> None:
         self.rules = rules
         self.resolver = ApplicabilityResolver(rules)
-        self._by_version = {r.version: r for r in rules}
+        self._by_version = {}
+        for r in rules:
+            key = (r.rule_id, r.version)
+            if key in self._by_version and self._by_version[key] != r:
+                raise FactConflictError(f"同一准则版本重复且不一致：{key}")
+            self._by_version[key] = r
 
     def evaluate(self, case: CompanyDisclosure) -> CaseFinding:
         try:
@@ -61,7 +66,7 @@ class CaseEvaluator:
         except (MissingParameterError, FactConflictError) as exc:
             return CaseFinding(case.ticker, case.standard_id, "证据不足/版本冲突",
                                case.version_disclosed, "", str(exc))
-        disclosed_rule = self._by_version.get(case.version_disclosed)
+        disclosed_rule = self._by_version.get((case.standard_id, case.version_disclosed))
         if disclosed_rule is None:
             return CaseFinding(case.ticker, case.standard_id, "证据不足",
                                case.version_disclosed, applicable.rule.version,

@@ -50,12 +50,17 @@ class ApplicabilityResolver:
         transaction = transaction_hits[0]
 
         if early_adoption:
-            future = [r for r in self._rules
-                      if r.rule_id == standard_id and r.early_adoption_allowed
-                      and r.valid_from > event_date
-                      ]
+            future = [
+                r for r in self._rules
+                if r.rule_id == standard_id
+                and r.early_adoption_allowed
+                and r.valid_from > event_date
+                and (not r.entity_scope or not entity_scope or (r.entity_scope & entity_scope))
+            ]
+            if len(future) > 1:
+                raise FactConflictError(f"提前适用候选冲突：{standard_id} @ {event_date}")
             if future:
-                chosen = sorted(future, key=lambda r: r.valid_from)[0]
+                chosen = future[0]
                 return ApplicableVersion(chosen, "early_adoption",
                                          f"允许提前适用：{chosen.version}（{chosen.valid_from} 起）")
 

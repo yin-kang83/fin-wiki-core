@@ -36,7 +36,6 @@ class AnnualReportDisclosureExtractor:
         r"于\s*(20\d{2})\s*年\s*1\s*月\s*1\s*日\s*(?:首次)?(?:执行|施行|实施)\s*(?:新)?租赁准则",
         r"(20\d{2})\s*年\s*1\s*月\s*1\s*日起\s*执行《?企业会计准则第21号",
         r"(20\d{2})\s*年\s*1\s*月\s*1\s*日(?:起)?\s*(?:开始)?按照\s*(?:新修订的)?租赁准则",
-        r"(20\d{2})\s*年\s*1\s*月\s*1\s*日起\s*首次执行",
         r"(20\d{2})\s*年(?:起)?\s*首次执行\s*(?:新)?租赁准则",
         r"(20\d{2})\s*年(?:起)?\s*(?:本集团|本公司|公司)?\s*执行\s*(?:新)?租赁准则",
         r"(20\d{2})\s*年\s*1\s*月\s*1\s*日起\s*施行\s*(?:新)?租赁准则",
@@ -49,6 +48,16 @@ class AnnualReportDisclosureExtractor:
 
     def extract(self, text: str) -> AdoptionEvidence:
         norm = re.sub(r"\s+", "", str(text or ""))
+
+        # 明确“未执行/尚未执行/未采用”优先：不能因为同段别处出现执行年份就翻成 adopted。
+        for marker in self.NOT_ADOPTED:
+            idx = norm.find(marker)
+            if idx >= 0:
+                if not self.old_version:
+                    raise MissingParameterError("识别到未执行新租赁准则，但未提供旧版本号")
+                return AdoptionEvidence("not_adopted", self.old_version, None,
+                                        norm[max(0, idx - 40):idx + 60], marker)
+
         hits: list[tuple[int, str, str]] = []
         for pat in self.ADOPT_PATTERNS:
             for m in re.finditer(pat, norm):
@@ -63,11 +72,8 @@ class AnnualReportDisclosureExtractor:
                         r"执行|施行|实施|适用", window):
                     hits.append((int(m.group(1)), window, "日期附近租赁准则+执行"))
         years = sorted({h[0] for h in hits})
-        if len(years) > 1 and 2021 in years:
-            # A 股 2021 年首次执行；同一份报告里的 2019/2020 常是子公司/其他准则，
-            # 只保留主体适用年 2021。
-            years = [2021]
         if len(years) > 1:
+            # 不按固定年份消解主体冲突：无法确定是本公司还是子公司时，交人工。
             raise MissingParameterError(f"年报出现多个新租赁准则执行年份：{years}")
         if len(years) == 1:
             year = years[0]

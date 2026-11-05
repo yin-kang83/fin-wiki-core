@@ -66,6 +66,10 @@ python examples/demo.py
 
 见 [docs/DESIGN.md](docs/DESIGN.md)：为什么这样分层、放弃了哪些方案、如何从失败模式反推不变量。
 
+## 审查与修复
+
+见 [docs/REVIEW_FIXES.md](docs/REVIEW_FIXES.md)：外部逻辑审查的 8 组问题与回归测试。
+
 ## 测试
 
 ```bash

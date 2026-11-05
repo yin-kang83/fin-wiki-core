@@ -59,11 +59,13 @@ class TemporalFactStore:
             if (old.entity, old.key) != (candidate.entity, candidate.key):
                 raise FactConflictError("supersedes 的 entity/key 不一致")
 
-        # 同 key 的有效期重叠：没有显式 supersedes 就拒绝，防止静默覆盖
+        # 同 key 的有效期重叠：与“当前仍有效的事实”冲突才拒绝。
+        # 已被替代的祖先（F1 <- F2 <- F3）不能再阻止 F3 的连续修正。
+        superseded_ids = {r.supersedes for r in self._facts if r.supersedes}
         for old in self._facts:
             if (old.entity, old.key) != (candidate.entity, candidate.key):
                 continue
-            if supersedes == old.fact_id:
+            if old.fact_id == supersedes or old.fact_id in superseded_ids:
                 continue
             if _overlap(candidate.valid_from, candidate.valid_to, old.valid_from, old.valid_to):
                 raise FactConflictError(
@@ -83,6 +85,20 @@ class TemporalFactStore:
         rec = rec.model_copy(update={"record_hash": _record_hash(rec)})
         self._facts.append(rec)
         return rec
+
+    def commit_many(
+        self,
+        candidates: list[FactCandidate],
+        *,
+        recorded_at: Optional[datetime] = None,
+    ) -> list[FactRecord]:
+        """批量入账：任一候选冲突则整批回滚，不留下半批数据。"""
+        before = list(self._facts)
+        try:
+            return [self.commit(c, recorded_at=recorded_at) for c in candidates]
+        except Exception:
+            self._facts = before
+            raise
 
     def _visible(self, as_of: date, knowledge_at: datetime) -> list[FactRecord]:
         candidates = [

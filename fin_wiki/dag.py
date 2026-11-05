@@ -56,6 +56,9 @@ class ExecutionEngine:
         elif node.kind == "operator":
             if node.op is None:
                 raise ValueError(f"算子节点缺 op：{name}")
+            shadow = set(node.inputs) & set(node.params)
+            if shadow:
+                raise ValueError(f"参数冲突：{name} 同时用事实和常量提供 {sorted(shadow)}")
             vals = {}
             fact_ids: list[str] = []
             for param, dep in node.inputs.items():
@@ -68,13 +71,15 @@ class ExecutionEngine:
                 derived_id=f"D{len(self.store.derived()) + 1:06d}",
                 key=name, value=value, unit="",
                 operator=node.op.name, operator_version=node.op.version,
-                input_fact_ids=sorted(set(fact_ids)),
+                input_fact_ids=tuple(sorted(set(fact_ids))),
                 formula=node.formula or name,
                 valid_at=as_of, computed_at=knowledge_at,
                 citation="，".join(node.inputs.values()),
+                parameters={k: format(v, "f") for k, v in node.params.items()},
+                input_mapping=dict(node.inputs),
             )
             self.store.record_derived(derived)
-            out = Resolved(value, derived.input_fact_ids)
+            out = Resolved(value, list(derived.input_fact_ids))
         else:
             raise ValueError(f"未知节点类型：{node.kind}")
         self._cache[key] = out

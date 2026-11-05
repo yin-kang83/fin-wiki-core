@@ -120,7 +120,7 @@ fin_wiki/
 
 ## 7. 测试
 
-- `fin_wiki/tests`：26 passed；
+- `fin_wiki/tests`：36 passed；
 - 覆盖：双时态修正、来源 hash、缺参、重叠冲突、DAG 血缘、规则版本/冲突、案例分类。
 
 ## 8. 开源边界（待讨论）

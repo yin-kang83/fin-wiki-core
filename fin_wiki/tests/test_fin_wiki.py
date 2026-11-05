@@ -9,6 +9,7 @@ from decimal import Decimal
 import pytest
 
 from fin_wiki import (
+    CitationError,
     CompiledWiki,
     FactCandidate,
     FactConflictError,
@@ -79,7 +80,7 @@ def test_wiki_citation_must_match_source():
                         valid_from=date(2023, 1, 1),
                         source=SourceSpan(doc_id="contract-A", doc_version="2023", start=0,
                                           end=6, text="XXXXXX"))
-    with pytest.raises(ValueError):
+    with pytest.raises(CitationError):
         wiki.add_candidate(bad)
 
 
@@ -108,7 +109,7 @@ def test_dag_diffeq_and_lineage():
     r = engine.run("第一期", as_of=date(2023, 6, 1))
     assert r.value == Decimal("1050.00")
     d = store.derived()[0]
-    assert d.input_fact_ids == [fact.fact_id]
+    assert d.input_fact_ids == (fact.fact_id,)
     assert engine.run("第一期", as_of=date(2023, 6, 1)).value == Decimal("1050.00")
 
 

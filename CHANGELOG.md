@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented here.
 
+## v0.1.3
+
+- Fix 8 logic findings from the external Codex review:
+  immutable ledger records, consecutive corrections, atomic batch commit,
+  annual-report extraction, DAG input shadowing, early-adoption scope,
+  namespaced case-version lookup, and immutable document versions.
+- Add `docs/REVIEW_FIXES.md` and `fin_wiki/tests/test_review_contracts.py`.
+- Tests: 36 passed.
+
 ## v0.1.2
 
 - Add `CITATION.cff`.

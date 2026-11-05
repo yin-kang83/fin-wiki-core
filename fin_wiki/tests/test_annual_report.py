@@ -55,16 +55,22 @@ def test_not_adopted_in_2021_is_late():
     assert finding.status == "疑似未及时采用"
 
 
-def test_multiple_including_2021_prefers_2021():
-    ev = AnnualReportDisclosureExtractor({2019: "2019", 2021: "2021"}).extract(
-        "子公司自2019年1月1日起执行新租赁准则；本公司自2021年1月1日起执行新租赁准则。")
-    assert ev.adopted_year == 2021 and ev.version == "2021"
-
-
-def test_multiple_without_2021_is_rejected():
+def test_multiple_years_are_rejected_not_guessed():
     with pytest.raises(MissingParameterError):
-        AnnualReportDisclosureExtractor({2019: "2019", 2020: "2020"}).extract(
-            "公司自2019年1月1日起执行新租赁准则；自2020年1月1日起执行新租赁准则。")
+        AnnualReportDisclosureExtractor({2019: "2019", 2021: "2021"}).extract(
+            "子公司自2019年1月1日起执行新租赁准则；本公司自2021年1月1日起执行新租赁准则。")
+
+
+def test_other_standard_is_not_lease_adoption():
+    with pytest.raises(MissingParameterError):
+        AnnualReportDisclosureExtractor({2021: "2021"}).extract(
+            "本公司自2021年1月1日起首次执行新收入准则。公司尚未执行新租赁准则。")
+
+
+def test_subsidiary_2021_does_not_override_company_2019():
+    with pytest.raises(MissingParameterError):
+        AnnualReportDisclosureExtractor({2019: "2019", 2021: "2021"}).extract(
+            "本公司自2019年1月1日起执行新租赁准则；子公司自2021年1月1日起执行新租赁准则。")
 
 
 def test_no_disclosure_is_rejected():

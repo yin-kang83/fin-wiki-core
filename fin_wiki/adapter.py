@@ -35,4 +35,7 @@ class WikiAwareAdapter:
             resolved.append(candidates[0])
         if missing:
             raise MissingParameterError(f"Wiki 中缺少事实：{entity}.{','.join(missing)}")
-        return [self.store.commit(c, recorded_at=recorded_at) for c in resolved]
+        # 入账边界再校验一次：文档/版本可能在预处理阶段被替换。
+        for candidate in resolved:
+            self.wiki.validate(candidate)
+        return self.store.commit_many(resolved, recorded_at=recorded_at)

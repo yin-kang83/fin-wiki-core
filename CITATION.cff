@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "Fin-Wiki: deterministic, evidence-traceable finance computation core"
+abstract: "A minimal reference implementation that separates evidence/knowledge from deterministic Decimal computation, with an append-only dual-time fact ledger, rule-version resolver, and case evaluator."
+authors:
+  - name: "Fin-Wiki contributors"
+version: "0.1.2"
+date-released: "2026-11-05"
+license: MIT
+repository-code: "https://gitee.com/yin-kang83/fin-wiki-core"
+keywords:
+  - finance
+  - accounting
+  - audit
+  - deterministic
+  - temporal-database
+  - knowledge-graph

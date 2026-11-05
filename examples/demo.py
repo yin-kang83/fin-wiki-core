@@ -2,8 +2,12 @@
 """Fin-Wiki minimal demo：证据 → 双时态账本 → 一阶差分 DAG。"""
 from __future__ import annotations
 
+import pathlib
+import sys
 from datetime import date, datetime, timezone
 from decimal import Decimal
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
 from fin_wiki import (
     CompiledWiki,

@@ -60,6 +60,10 @@ python examples/demo.py
 
 见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
+## 设计说明
+
+见 [docs/DESIGN.md](docs/DESIGN.md)：为什么这样分层、放弃了哪些方案、如何从失败模式反推不变量。
+
 ## 测试
 
 ```bash

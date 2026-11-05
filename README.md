@@ -58,6 +58,8 @@ python examples/demo.py
 
 ## 架构
 
+![Fin-Wiki 架构](docs/ARCHITECTURE.svg)
+
 见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
 
 ## 设计说明

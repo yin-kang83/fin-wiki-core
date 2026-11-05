@@ -1,5 +1,7 @@
 # Fin-Wiki 架构说明（开源草稿）
 
+![Fin-Wiki 架构](ARCHITECTURE.svg)
+
 > 目标：把“知识/证据”与“确定性财务计算”分开。LLM 只读、只抽参，不写账、不算数。
 > 本文件是开源仓库的主架构说明，后续可拆成 README + docs/architecture.md。
 

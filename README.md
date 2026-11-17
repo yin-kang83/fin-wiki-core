@@ -1,5 +1,8 @@
 # Fin-Wiki
 
+> DOI: [10.5281/zenodo.24295148](https://doi.org/10.5281/zenodo.24295148)
+
+
 > A deterministic, evidence-traceable finance computation core.
 > 中文定位：**知识/证据层与确定性财务计算层分离的最小参考实现。**
 

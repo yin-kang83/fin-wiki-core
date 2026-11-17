@@ -15,3 +15,6 @@ keywords:
   - deterministic
   - temporal-database
   - knowledge-graph
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.24295148

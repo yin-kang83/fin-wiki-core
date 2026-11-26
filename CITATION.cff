@@ -17,4 +17,6 @@ keywords:
   - knowledge-graph
 identifiers:
   - type: doi
+    value: 10.5281/zenodo.24553812
+  - type: doi
     value: 10.5281/zenodo.24295147

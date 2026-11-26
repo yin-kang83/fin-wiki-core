@@ -1,6 +1,8 @@
 # Fin-Wiki
 
-> DOI（最新版）: [10.5281/zenodo.24295147](https://doi.org/10.5281/zenodo.24295147)
+> DOI（最新版）: [10.5281/zenodo.24553812](https://doi.org/10.5281/zenodo.24553812)
+>
+> Concept DOI: [10.5281/zenodo.24295147](https://doi.org/10.5281/zenodo.24295147)
 >
 > v0.1.3 版本 DOI: [10.5281/zenodo.24509047](https://doi.org/10.5281/zenodo.24509047)
 

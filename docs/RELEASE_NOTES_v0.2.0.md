@@ -22,8 +22,9 @@
 
 - `superagent.py` is a reference skeleton, not a production scheduler.
 - SQLite is local/single-node.
-- v0.2.0 Zenodo record is not yet published; concept DOI remains:
+- v0.2.0 Zenodo record:
 
 ```text
-10.5281/zenodo.24295147
+version DOI: 10.5281/zenodo.24553812
+concept DOI: 10.5281/zenodo.24295147
 ```

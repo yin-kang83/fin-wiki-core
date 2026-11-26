@@ -9,7 +9,7 @@ All notable changes to this project are documented here.
 - Add long-term equity experiment: cost→equity conversion, impairment non-reversal,
   worker replacement, backlog recovery.
 - Add `docs/SUPERAGENT.md` and tests for append-only store, watchdog, worker retry.
-- Keep release DOI at concept level; v0.2.0 Zenodo record not yet published.
+- Zenodo v0.2.0: DOI `10.5281/zenodo.24553812` (concept `10.5281/zenodo.24295147`).
 
 ## v0.1.3
 

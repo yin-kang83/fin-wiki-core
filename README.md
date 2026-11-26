@@ -41,6 +41,8 @@ Fin-Wiki 不是一个聊天机器人，也不是一个“LLM 算财务”的项�
 | `resolver.py` | 按业务日/报表期/过渡条款/提前适用选版本 |
 | `case_study.py` | 披露版本 vs 适用版本比对（研究用，不判“违规”） |
 | `annual_report.py` | 年报文本 → 采用年份/未采用 → 案例评估 |
+| `superagent.py` | StateStore / Worker / Watchdog / Router 四模块骨架 |
+| `adapters.py` | LLM adapter 边界：超时/重试/JSON/OpenAI-compatible |
 
 ## 快速开始
 
@@ -65,7 +67,8 @@ python examples/demo.py
 
 ![Fin-Wiki 架构](docs/ARCHITECTURE.svg)
 
-见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
+见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。  
+Super-agent 四模块见 [docs/SUPERAGENT.md](docs/SUPERAGENT.md)。
 
 ## 设计说明
 

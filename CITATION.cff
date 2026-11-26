@@ -4,8 +4,8 @@ title: "Fin-Wiki: deterministic, evidence-traceable finance computation core"
 abstract: "A minimal reference implementation that separates evidence/knowledge from deterministic Decimal computation, with an append-only dual-time fact ledger, rule-version resolver, and case evaluator."
 authors:
   - name: "Fin-Wiki contributors"
-version: "0.1.3"
-date-released: "2026-11-25"
+version: "0.2.0"
+date-released: "2026-11-26"
 license: MIT
 repository-code: "https://gitee.com/yin-kang83/fin-wiki-core"
 keywords:

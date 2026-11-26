@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented here.
 
+## v0.2.0
+
+- Add `fin_wiki.superagent`: StateStore / Worker / Watchdog / Router skeleton.
+- Add `fin_wiki.adapters`: LLM adapter boundary (timeout/retry/JSON/OpenAI-compatible).
+- Add long-term equity experiment: cost→equity conversion, impairment non-reversal,
+  worker replacement, backlog recovery.
+- Add `docs/SUPERAGENT.md` and tests for append-only store, watchdog, worker retry.
+- Keep release DOI at concept level; v0.2.0 Zenodo record not yet published.
+
 ## v0.1.3
 
 - Fix 8 logic findings from the external Codex review:

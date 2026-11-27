@@ -1,4 +1,4 @@
-﻿# -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 """Fin-Wiki LLM adapter 边界测试（不联网）。"""
 import json
 import unittest
@@ -51,6 +51,44 @@ class AdapterBoundaryTest(unittest.TestCase):
         body = json.loads(req.data.decode("utf-8"))
         self.assertEqual(body["model"], "test-model")
         self.assertEqual(body["messages"][0]["content"], "hello")
+
+    def test_openai_local_provider_without_key(self):
+        adapter = OpenAICompatibleAdapter(
+            "http://127.0.0.1:11434/v1", "", "local-model")
+        req = adapter.build_request("hello")
+        self.assertNotIn("Authorization", req.headers)
+
+    def test_openai_json_mode(self):
+        adapter = OpenAICompatibleAdapter(
+            "https://example.invalid/v1", "k", "m", json_mode=True)
+        body = json.loads(adapter.build_request("hello").data.decode("utf-8"))
+        self.assertEqual(body["response_format"], {"type": "json_object"})
+
+    def test_reasoning_length_retry_then_content(self):
+        from unittest.mock import patch
+
+        class _Resp:
+            def __init__(self, payload):
+                self.payload = json.dumps(payload).encode("utf-8")
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *args):
+                return False
+
+            def read(self):
+                return self.payload
+
+        empty = {"choices": [{"message": {"content": ""},
+                              "finish_reason": "length"}]}
+        good = {"choices": [{"message": {"content": '{"ok": true}'},
+                             "finish_reason": "stop"}]}
+        adapter = OpenAICompatibleAdapter(
+            "https://example.invalid/v1", "k", "m", max_output_tokens=100)
+        with patch("fin_wiki.adapters.urllib.request.urlopen",
+                   side_effect=[_Resp(empty), _Resp(good)]):
+            self.assertEqual(adapter._post("hello"), '{"ok": true}')
 
     def test_worker_wraps_adapter(self):
         from fin_wiki.superagent import LLMParserWorker

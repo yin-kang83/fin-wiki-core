@@ -94,6 +94,13 @@ python -m pytest fin_wiki/tests -q
 
 本仓库只包含核心与合成测试；真实年报、题库、业务数据、生产适配器不在开源范围。
 
+## 隐私与数据边界
+
+见 [docs/PRIVACY.md](docs/PRIVACY.md)。
+
+核心库不收集、不上传数据；使用云端 LLM provider 时输入会发送给第三方，
+请勿输入个人信息、客户数据或未公开业务资料。
+
 ## 许可证
 
 MIT，见 [LICENSE](LICENSE)。

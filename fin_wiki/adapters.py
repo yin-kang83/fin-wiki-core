@@ -110,52 +110,83 @@ def extract_json(raw: str) -> dict[str, Any]:
 class OpenAICompatibleAdapter(LLMAdapter):
     """OpenAI-compatible Chat Completions adapter。
 
+    支持云端与本地（Ollama / vLLM / llama.cpp）两类 provider：
+    - 云端：需要 FINWIKI_LLM_API_KEY；
+    - 本地：可不设 key（不发送 Authorization 头）；
+    - FINWIKI_LLM_JSON_MODE=1 时发送 response_format={"type":"json_object"}。
+
     密钥只从环境变量读取，不打印、不落盘：
       FINWIKI_LLM_BASE_URL
-      FINWIKI_LLM_API_KEY
+      FINWIKI_LLM_API_KEY（本地 provider 可留空）
       FINWIKI_LLM_MODEL
+      FINWIKI_LLM_JSON_MODE（可选，默认 0）
     """
 
-    def __init__(self, base_url: str, api_key: str, model: str,
-                 timeout: float = 30.0, max_output_tokens: int = 2000) -> None:
+    def __init__(self, base_url: str, api_key: str = "", model: str = "",
+                 timeout: float = 30.0, max_output_tokens: int = 2000,
+                 retries: int = 1, json_mode: bool = False) -> None:
         if not base_url or not model:
             raise ValueError("base_url/model 不能为空")
-        if not api_key:
-            raise ValueError("api_key 不能为空")
         self.base_url = base_url.rstrip("/")
-        self.api_key = api_key
+        self.api_key = (api_key or "").strip()
         self.model = model
         self.max_output_tokens = int(max_output_tokens)
-        super().__init__(self._post, timeout=timeout, retries=1)
+        self.json_mode = bool(json_mode)
+        super().__init__(self._post, timeout=timeout, retries=retries)
 
     @classmethod
     def from_env(cls) -> OpenAICompatibleAdapter:
         base = os.environ.get("FINWIKI_LLM_BASE_URL", "")
         key = os.environ.get("FINWIKI_LLM_API_KEY", "")
         model = os.environ.get("FINWIKI_LLM_MODEL", "")
-        if not (base and key and model):
-            raise AdapterError("缺少 FINWIKI_LLM_BASE_URL/API_KEY/MODEL")
-        return cls(base, key, model)
+        if not (base and model):
+            raise AdapterError("缺少 FINWIKI_LLM_BASE_URL/MODEL")
+        json_mode = os.environ.get("FINWIKI_LLM_JSON_MODE", "0").strip().lower() in {
+            "1", "true", "yes",
+        }
+        return cls(base, key, model, json_mode=json_mode)
 
-    def build_request(self, text: str) -> urllib.request.Request:
-        body = json.dumps({
+    def build_request(self, text: str,
+                      max_output_tokens: int | None = None) -> urllib.request.Request:
+        payload = {
             "model": self.model,
             "messages": [{"role": "user", "content": text}],
             "temperature": 0,
-            "max_tokens": self.max_output_tokens,
-        }, ensure_ascii=False).encode("utf-8")
+            "max_tokens": int(max_output_tokens or self.max_output_tokens),
+        }
+        if self.json_mode:
+            payload["response_format"] = {"type": "json_object"}
+        body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        headers = {"Content-Type": "application/json"}
+        if self.api_key:
+            headers["Authorization"] = f"Bearer {self.api_key}"
         return urllib.request.Request(
             self.base_url + "/chat/completions", data=body, method="POST",
-            headers={"Content-Type": "application/json",
-                     "Authorization": f"Bearer {self.api_key}"})
+            headers=headers)
 
     def _post(self, text: str) -> str:
-        try:
-            with urllib.request.urlopen(self.build_request(text), timeout=self.timeout) as resp:
-                payload = json.loads(resp.read().decode("utf-8"))
-        except urllib.error.URLError as exc:
-            raise AdapterError(f"HTTP 调用失败: {exc}") from exc
-        try:
-            return payload["choices"][0]["message"]["content"]
-        except (KeyError, IndexError, TypeError) as exc:
-            raise AdapterError("响应缺少 choices[0].message.content") from exc
+        tokens = self.max_output_tokens
+        last_finish = ""
+        for _attempt in range(3):
+            try:
+                with urllib.request.urlopen(
+                        self.build_request(text, tokens),
+                        timeout=self.timeout) as resp:
+                    payload = json.loads(resp.read().decode("utf-8"))
+            except urllib.error.URLError as exc:
+                raise AdapterError(f"HTTP 调用失败: {exc}") from exc
+            try:
+                choice = payload["choices"][0]
+                content = choice["message"].get("content") or ""
+                last_finish = str(choice.get("finish_reason") or "")
+            except (KeyError, IndexError, TypeError) as exc:
+                raise AdapterError("响应缺少 choices[0].message.content") from exc
+            if content:
+                return content
+            # reasoning 模型可能把预算全部耗在 reasoning_content，content 为空；
+            # 只在 length/空内容时放大预算重试，仍为空则失败。
+            if last_finish == "length" and tokens < 8192:
+                tokens = min(tokens * 2, 8192)
+                continue
+            break
+        raise AdapterError(f"模型返回空内容（finish_reason={last_finish}）")

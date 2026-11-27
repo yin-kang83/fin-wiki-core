@@ -21,4 +21,9 @@ python -m pytest fin_wiki/tests -q
 
 - Keep changes focused;
 - Include tests;
-- Do not add real annual reports, question banks, customer data, or secrets.
+- Do not add real annual reports, question banks, customer data, or secrets;
+- Do not include personal information (names, phone numbers, ID numbers,
+  addresses, personal email addresses);
+- Test data must be synthetic or fully de-identified.
+
+See [docs/PRIVACY.md](docs/PRIVACY.md) for the data boundary.
